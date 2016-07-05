@@ -83,20 +83,14 @@ class IndexRequestQueue {
             }
             def json = event(type, Long.valueOf(id), value)
             if (json != null) {
-                println "Indexing $key $value ..."
-                def response = client.prepareIndex(indexName, type, id).setSource(json).get()
-                println "Index response=$response"
-            } else {
-                println "No mapping for $type"
+                client.prepareIndex(indexName, type, id).setSource(json).get()
             }
         }
 
         // Execute delete requests
         toDelete.each { String key ->
             def (type, id) = key.split('@').toList()
-            println "Deleting $key ..."
-            def response = client.prepareDelete(indexName, type, id).get()
-            println "Delete response=$response"
+            client.prepareDelete(indexName, type, id).get()
         }
     }
 

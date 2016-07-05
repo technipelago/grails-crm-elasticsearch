@@ -1,9 +1,5 @@
+import grails.plugins.crm.elasticsearch.ElasticsearchClientFactoryBean
 import org.elasticsearch.client.Client
-import org.elasticsearch.client.transport.TransportClient
-import org.elasticsearch.common.settings.Settings
-import org.elasticsearch.common.transport.InetSocketTransportAddress
-import org.elasticsearch.common.transport.TransportAddress
-import org.elasticsearch.shield.ShieldPlugin
 
 /*
  * Copyright (c) 2016 Goran Ehrsson.
@@ -43,22 +39,19 @@ Provides Elasticsearch indexing features for GR8 CRM applications.
     def issueManagement = [system: "github", url: "https://github.com/goeh/grails-crm-elasticsearch/issues"]
     def scm = [url: "https://github.com/goeh/grails-crm-elasticsearch"]
 
-    def doWithApplicationContext = { ctx ->
-        if(application.config.elasticsearch.enabled) {
-            String clusterName = application.config.elasticsearch.cluster.name ?: 'elasticsearch'
-            String indexName = application.config.elasticsearch.index.name ?: 'grails'
-            Settings settings = Settings.settingsBuilder()
-                    .put("cluster.name", clusterName)
-                    .put("shield.user", "elasticsearch:raspberry")
-                    .build()
-            List<Map> hosts = application.config.elasticsearch.hosts ?: [host: 'localhost', port: 9300]
-            List<TransportAddress> transportAddresses = hosts.collect {
-                new InetSocketTransportAddress(InetAddress.getByName(it.host), it.port)
+    def doWithSpring = {
+        if (application.config.elasticsearch.enabled) {
+            elasticsearchClientFactory(ElasticsearchClientFactoryBean) {
+                grailsApplication = application
             }
-            Client client = TransportClient.builder()
-                    .addPlugin(ShieldPlugin.class)
-                    .settings(settings).build()
-                    .addTransportAddresses(*transportAddresses)
+            elasticsearchClient(elasticsearchClientFactory: 'getInstance')
+        }
+    }
+
+    def doWithApplicationContext = { ctx ->
+        if (application.config.elasticsearch.enabled) {
+            Client client = ctx.getBean('elasticsearchClient')
+            String indexName = application.config.elasticsearch.index.name ?: 'grails'
             ctx.eventTriggeringInterceptor.datastores.each { key, datastore ->
                 applicationContext.addApplicationListener(new grails.plugins.crm.elasticsearch.AuditEventListener(ctx, datastore, client, indexName))
             }
