@@ -21,8 +21,20 @@
         <tbody>
         <g:each in="${result}" var="m">
             <tr>
-                <td><crm:referenceLink reference="${m}">${m}</crm:referenceLink></td>
-                <td>${message(code: grails.util.GrailsNameUtils.getPropertyName(m.class) + '.label')}</td>
+                <g:if test="${m.error}">
+                    <td>
+                        <g:message code="elasticsearch.notfound.label" default="No instance found"/>
+                    </td>
+                    <td>
+                        ${m.error.type}@${m.error.id}
+                    </td>
+                </g:if>
+                <g:else>
+                    <td><crm:referenceLink reference="${m}">${m}</crm:referenceLink></td>
+                    <td>
+                        ${message(code: grails.util.GrailsNameUtils.getPropertyName(m.class) + '.label')}
+                    </td>
+                </g:else>
             </tr>
         </g:each>
         </tbody>
