@@ -21,12 +21,12 @@
         <tbody>
         <g:each in="${result}" var="m">
             <tr>
-                <g:if test="${m.error}">
+                <g:if test="${m.errors['type']}">
                     <td>
                         <g:message code="elasticsearch.notfound.label" default="No instance found"/>
                     </td>
                     <td>
-                        ${m.error.type}@${m.error.id}
+                        ${m.errors.type}@${m.errors.id}
                     </td>
                 </g:if>
                 <g:else>

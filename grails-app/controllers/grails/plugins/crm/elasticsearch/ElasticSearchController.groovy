@@ -41,7 +41,7 @@ class ElasticsearchController {
             model.totalCount = hits.totalHits
             model.searchResult = hits.hits
             model.result = hits.hits.collect{
-                crmCoreService.getReference(it.type + '@' + it.id) ?: [error: it]
+                crmCoreService.getReference(it.type + '@' + it.id) ?: [errors: it]
             }
         }
         model
