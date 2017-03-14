@@ -17,11 +17,10 @@
 package grails.plugins.crm.elasticsearch
 
 import org.elasticsearch.client.Client
-import org.elasticsearch.client.transport.TransportClient
+import org.elasticsearch.transport.client.PreBuiltTransportClient
 import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.common.transport.InetSocketTransportAddress
 import org.elasticsearch.common.transport.TransportAddress
-import org.elasticsearch.shield.ShieldPlugin
 
 /**
  * Created by goran on 2016-07-05.
@@ -38,19 +37,19 @@ class ElasticsearchClientFactoryBean {
             //String indexName = config.index.name ?: 'grails'
             String username = config.username ?: 'elasticsearch'
             String password = config.password ?: 'password'
-            Settings.Builder builder = Settings.settingsBuilder().put("cluster.name", clusterName)
-            if (username && password) {
-                builder.put("shield.user", "$username:$password".toString())
-            }
-            Settings settings = builder.build()
+            Settings.Builder builder = Settings.builder().put("cluster.name", clusterName)
+            //if (username && password) {
+            //    builder.put("shield.user", "$username:$password".toString())
+            //}
             List<Map> hosts = config.hosts ?: [host: 'localhost', port: 9300]
             List<TransportAddress> transportAddresses = hosts.collect {
                 new InetSocketTransportAddress(InetAddress.getByName(it.host), it.port)
             }
-            client = TransportClient.builder()
-                    .addPlugin(ShieldPlugin.class)
-                    .settings(settings).build()
-                    .addTransportAddresses(*transportAddresses)
+
+            client = new PreBuiltTransportClient(builder.build())
+            for(addr in transportAddresses) {
+                client.addTransportAddress(addr)
+            }
         }
         client
     }

@@ -44,7 +44,7 @@ class ElasticsearchService {
         int max = Integer.parseInt((params.max ?: 50).toString())
         QueryBuilder query = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery("tenant", tenant))
-                .must(QueryBuilders.matchPhraseQuery("_all", q).fuzziness(1).prefixLength(2))
+                .must(QueryBuilders.fuzzyQuery("_all", q).prefixLength(2))
         elasticsearchClient.prepareSearch(getSearchIndex())
                 //.setTypes(*typeMappings.keySet().toArray())
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
